@@ -1,0 +1,90 @@
+<head>
+
+</head>
+<body onload="init();">
+	<script>
+	var hex,rom;
+	var filename="";
+	function init(){
+	hex=document.getElementById("hex");
+	rom=document.getElementById("rom");
+	mem=document.getElementById("mem");
+	}
+	
+
+	
+		function loadFile( filename ) {
+				console.log(filename.name);
+				var reader = new FileReader();
+				reader.onloadend = function( event ) {
+					hex.value=reader.result;
+					do_eval();
+				};
+				reader.readAsText( filename );
+			}
+			
+			
+			
+			function do_eval()
+			{
+			rom.value="";
+			mem.value="";
+			var s=0;
+			var count=0;
+			var addr=0;
+			var ah=0;
+			var al=0;
+			var type=0;
+			for(var i=0;i<hex.value.length;i++){
+				
+				switch(s){
+					case 0: if(hex.value[i]==":")s=1;break;
+					case 1: 
+					count="";
+					count+=hex.value[i++];
+					count+=hex.value[i++];
+					count=parseInt(count,16);
+					console.log("C:"+count);
+					addr="";
+					addr+=hex.value[i++];
+					addr+=hex.value[i++];
+					addr+=hex.value[i++];
+					addr+=hex.value[i++];
+					type="";
+					type+=hex.value[i++];
+					type+=hex.value[i];
+					console.log("T"+type);
+					switch(type)
+					{
+					case "02":ah=addr;s=0;break;
+					case "00":al=addr;s=2;break;
+					case "01":s=99;break;
+					}
+				
+					break;
+					case 2:
+					console.log("Address:"+ah+al);
+					rom.value+="@"+parseInt(ah+al,16)+"\n";
+					for(var l=0;l<count;l++){
+					    var v1=hex.value[i++];
+						var v2=hex.value[i++];
+						rom.value+=v1;
+						rom.value+=v2;
+						rom.value+="\n";
+						mem.value+="rom["+(parseInt((ah+al),16)+l)+"]={8'h"+v1+v2+"};\n";
+						}
+					
+					s=0;
+					break;
+					
+					case 99:break;
+					}
+				}
+			
+			}
+</script>
+<input type="file" id="ft" onchange="loadFile(this.files[0]);"></input>
+<textarea id="hex"></textarea>
+<textarea id="rom"></textarea>
+<textarea id="mem"></textarea>
+</body>
